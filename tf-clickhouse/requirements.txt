@@ -1,0 +1,11 @@
+certifi==2024.12.14
+clickhouse-connect==0.8.13
+iniconfig==2.0.0
+isort==5.13.2
+lz4==4.3.3
+packaging==24.2
+pluggy==1.5.0
+pytz==2024.2
+ruff==0.9.1
+urllib3==2.3.0
+zstandard==0.23.0
