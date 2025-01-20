@@ -52,10 +52,23 @@ This is an example using Trino with an Iceberg connector, a Postgres metastore, 
       docker-compose up -d
     ```
 
+3. **Python Environment**
+   ```python
+   python3.9 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
 4. **Access Servies**
  - MinIO Console: http://localhost:9001 (user: minio-user, password: minio-password)
  - PostgreSQL: localhost:5432 (user: postgres-user, password: postgres-password, database: iceberg)
  - Trino: http://localhost:8080 (user: admin)
+
+
+5. **Work with Trino**
+ - Add secret key from minio to .dlt/secrets.toml
+ - Run ```python3 chess_pipeline.py```
+ - Create tables from example.sql
 
 
 Stop and remove the containers and network:
