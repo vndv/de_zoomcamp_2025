@@ -43,7 +43,8 @@ This is an example using Trino with an Iceberg connector, a Postgres metastore, 
 
 1. **Clone the Repository**  
    ```bash
-   cd md-stack
+   git clone git@github.com:vndv/de_zoomcamp_2025.git
+   cd de_zoomcamp_2025/md-stack
    ```
 
 2. **Build & Start Services**
