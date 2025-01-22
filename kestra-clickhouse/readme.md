@@ -9,9 +9,6 @@ This is an example using Clickhouse as engine Kestra as orchestrator and MinIO f
 - **SQLMesh**: Transformation framework for SQL
 - **MinIO**: Learn about object storage and how it integrates with modern data pipelines, serving as your S3-compatible storage layer. (Using this architecture for a NYC 
 
-<p align='center'>
-  <img src='mds.png')
-</p>
 
 ## Services
 
@@ -54,6 +51,11 @@ This is an example using Clickhouse as engine Kestra as orchestrator and MinIO f
  - Open Minio UI and add secret_key and accsess_key they need to load data into bucket
  - Add region eu-central-1 and restart
  - After create bucket in Kestra pipeline change bucket Access Policy to public 
+
+ <p align='center'>
+  <img src='minio.png')
+ </p>
+
 
 5. **Kestra**
   - Create minio_kv pipeline
