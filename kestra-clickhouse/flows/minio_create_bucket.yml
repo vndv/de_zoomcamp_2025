@@ -1,0 +1,11 @@
+id: minio_create_bucket
+namespace: zoomcamp
+
+tasks:
+  - id: create_bucket
+    type: io.kestra.plugin.minio.CreateBucket
+    accessKeyId: "{{kv('ACCESS_KEY_ID')}}"
+    secretKeyId: "{{kv('SECRET_KEY_ID')}}"
+    region: "{{kv('REGION')}}"
+    endpoint: "{{kv('ENDPOINT_URL')}}"
+    bucket: "{{kv('BUCKET_NAME')}}"

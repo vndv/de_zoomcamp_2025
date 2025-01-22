@@ -1,0 +1,39 @@
+id: minio_kv
+namespace: zoomcamp
+
+tasks:
+  - id: aws_access_key_id
+    type: io.kestra.plugin.core.kv.Set
+    key: ACCESS_KEY_ID
+    kvType: STRING
+    value: <your_aws_access_key_id>
+
+  - id: aws_secret_access_key
+    type: io.kestra.plugin.core.kv.Set
+    key: SECRET_KEY_ID
+    kvType: STRING
+    value: <your_aws_secret_access_key>
+
+  - id: bucket_name
+    type: io.kestra.plugin.core.kv.Set
+    key: BUCKET_NAME
+    kvType: STRING
+    value: zoomcamp
+
+  - id: dataset
+    type: io.kestra.plugin.core.kv.Set
+    key: DATASET
+    kvType: STRING
+    value: zoomcamp
+
+  - id: endpoint_url
+    type: io.kestra.plugin.core.kv.Set
+    key: ENDPOINT_URL
+    kvType: STRING
+    value: http://object-store:9000
+
+  - id: region
+    type: io.kestra.plugin.core.kv.Set
+    key: REGION
+    kvType: STRING
+    value: eu-central-1

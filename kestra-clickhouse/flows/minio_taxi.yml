@@ -1,0 +1,101 @@
+id: minio_taxi
+namespace: zoomcamp
+description: |
+  The CSV Data used in the course: https://github.com/DataTalksClub/nyc-tlc-data/releases
+
+inputs:
+  - id: taxi
+    type: SELECT
+    displayName: Select taxi type
+    values: [yellow, green]
+    defaults: green
+
+  - id: year
+    type: SELECT
+    displayName: Select year
+    values: ["2019", "2020"]
+    defaults: "2019"
+    allowCustomValue: true # allows you to type 2021 from the UI for the homework 🤗
+
+  - id: month
+    type: SELECT
+    displayName: Select month
+    values: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+    defaults: "01"
+
+variables:
+  file: "{{inputs.taxi}}_tripdata_{{inputs.year}}-{{inputs.month}}.csv"
+  minio_file: "{{kv('BUCKET_NAME')}}_{{vars.file}}"
+  table: "{{kv('DATASET')}}.{{inputs.taxi}}_tripdata_{{inputs.year}}_{{inputs.month}}"
+  data: "{{outputs.extract.outputFiles[inputs.taxi ~ '_tripdata_' ~ inputs.year ~ '-' ~ inputs.month ~ '.csv']}}"
+
+tasks:
+  - id: set_label
+    type: io.kestra.plugin.core.execution.Labels
+    labels:
+      file: "{{render(vars.file)}}"
+      taxi: "{{inputs.taxi}}"
+
+  - id: extract
+    type: io.kestra.plugin.scripts.shell.Commands
+    outputFiles:
+      - "*.csv"
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - wget -qO- https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{{inputs.taxi}}/{{render(vars.file)}}.gz | gunzip > {{render(vars.file)}}
+
+  - id: upload_to_minio
+    type: io.kestra.plugin.minio.Upload
+    accessKeyId: "{{kv('ACCESS_KEY_ID')}}"
+    secretKeyId: "{{kv('SECRET_KEY_ID')}}"
+    region: "{{kv('REGION')}}"
+    endpoint: "{{kv('ENDPOINT_URL')}}"
+    bucket: "{{kv('BUCKET_NAME')}}"
+    from: "{{render(vars.data)}}"
+    key: "{{render(vars.minio_file)}}"
+
+  - id: create_database
+    type: io.kestra.plugin.jdbc.clickhouse.Query
+    sql: CREATE DATABASE IF NOT EXISTS zoomcamp
+
+  - id: create_table
+    type: io.kestra.plugin.jdbc.clickhouse.Query
+    sql: |
+      CREATE TABLE IF NOT EXISTS zoomcamp.green_tripdata (
+      VendorID String,
+      lpep_pickup_datetime String,
+      lpep_dropoff_datetime String,
+      store_and_fwd_flag String,
+      RatecodeID String,
+      PULocationID String,
+      DOLocationID String,
+      passenger_count String,
+      trip_distance String,
+      fare_amount String,
+      extra String,
+      mta_tax String,
+      tip_amount String,
+      tolls_amount String,
+      ehail_fee String,
+      improvement_surcharge String,
+      total_amount String,
+      payment_type String,
+      congestion_surcharge String,
+      trip_type String
+      )
+      ENGINE = S3('http://object-store:9000/zoomcamp/{{render(vars.minio_file)}}',
+          "{{kv('ACCESS_KEY_ID')}}",
+          "{{kv('SECRET_KEY_ID')}}",
+          'CSV')
+      SETTINGS 
+          input_format_with_names_use_header = 1;
+
+
+
+pluginDefaults:
+  - type: io.kestra.plugin.jdbc.clickhouse.Query
+    values:
+      url: jdbc:clickhouse://host.docker.internal:8123/
+      username: default
+      password: clickhouse_password
