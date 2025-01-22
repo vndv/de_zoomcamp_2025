@@ -22,7 +22,7 @@ This is an example using Clickhouse as engine Kestra as orchestrator and MinIO f
   - Using MinIO as a source and destination for ETL pipelines.
 - **Console URL**: [http://localhost:9001](http://localhost:9001)
 
-### MinIO (Object Storage)
+### Kestra (Workflow Orchestrator)
 - **Purpose**: Creating pipeline and orchestrate task.
 - **What You’ll Learn**:
   - Uploading data to Minio .
@@ -37,7 +37,7 @@ This is an example using Clickhouse as engine Kestra as orchestrator and MinIO f
 1. **Clone the Repository**  
    ```bash
    git clone git@github.com:vndv/de_zoomcamp_2025.git
-   cd de_zoomcamp_2025/md-stack
+   cd de_zoomcamp_2025/kestra-clickhouse
    ```
 
 2. **Build & Start Services**
