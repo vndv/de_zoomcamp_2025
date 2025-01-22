@@ -48,6 +48,17 @@ This is an example using Clickhouse as engine Kestra as orchestrator and MinIO f
 3. **Access Servies**
  - MinIO Console: http://localhost:9001 (user: minio-user, password: minio-password)
  - Kestra UI http://localhost:8080/
+ - Clickhouse connect in DBeaver (port:8123, user: default, database: default, password: clickhouse_password)
+
+4. **Minio**
+ - Open Minio UI and add secret_key and accsess_key they need to load data into bucket
+ - Add region eu-central-1 and restart
+ - After create bucket in Kestra pipeline change bucket Access Policy to public 
+
+5. **Kestra**
+  - Create minio_kv pipeline
+  - Create minio_create_bucket pipeline and then add Access Policy
+  - Create minio_taxi pipeline
 
 
 Stop and remove the containers and network:
