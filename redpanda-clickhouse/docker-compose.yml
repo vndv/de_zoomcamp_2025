@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.1
+    restart: on-failure
+    depends_on:
+      - kafka
+    ports:
+      - "9001:9000"  # ClickHouse native protocol
+      - "8123:8123"  # ClickHouse HTTP interface
+    environment:
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=clickhouse_password
