@@ -24,7 +24,7 @@ tasks:
     type: io.kestra.plugin.core.kv.Set
     key: DATASET
     kvType: STRING
-    value: zoomcamp
+    value: bronze
 
   - id: endpoint_url
     type: io.kestra.plugin.core.kv.Set

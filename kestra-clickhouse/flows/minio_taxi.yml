@@ -1,7 +1,7 @@
 id: minio_taxi
 namespace: zoomcamp
 description: |
-  The CSV Data used in the course: https://github.com/DataTalksClub/nyc-tlc-data/releases
+  The Parquet Data used in the course: https://github.com/DataTalksClub/nyc-tlc-data/releases
 
 inputs:
   - id: taxi
@@ -10,12 +10,11 @@ inputs:
     values: [yellow, green]
     defaults: green
 
-
 variables:
-  file: "{{inputs.taxi}}_tripdata_{{trigger.date | date('yyyy-MM')}}.csv"
+  file: "{{inputs.taxi}}_tripdata_{{trigger.date | date('yyyy-MM')}}.parquet"
   minio_file: "{{kv('BUCKET_NAME')}}_{{vars.file}}"
-  table: "{{kv('DATASET')}}.{{inputs.taxi}}_tripdata_{{trigger.date | date('yyyy_MM')}}"
-  data: "{{outputs.extract.outputFiles[inputs.taxi ~ '_tripdata_' ~ (trigger.date | date('yyyy-MM')) ~ '.csv']}}"
+  table: "{{kv('DATASET')}}.{{inputs.taxi}}_tripdata"
+  data: "{{outputs.extract.outputFiles[inputs.taxi ~ '_tripdata_' ~ (trigger.date | date('yyyy-MM')) ~ '.parquet']}}"
 
 tasks:
   - id: set_label
@@ -27,11 +26,11 @@ tasks:
   - id: extract
     type: io.kestra.plugin.scripts.shell.Commands
     outputFiles:
-      - "*.csv"
+      - "*.parquet"
     taskRunner:
       type: io.kestra.plugin.core.runner.Process
     commands:
-      - wget -qO- https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{{inputs.taxi}}/{{render(vars.file)}}.gz | gunzip > {{render(vars.file)}}
+      - wget -qO- https://d37ci6vzurychx.cloudfront.net/trip-data/{{inputs.taxi}}_tripdata_{{trigger.date | date('yyyy-MM')}}.parquet > {{render(vars.file)}}
 
   - id: upload_to_minio
     type: io.kestra.plugin.minio.Upload
@@ -41,11 +40,11 @@ tasks:
     endpoint: "{{kv('ENDPOINT_URL')}}"
     bucket: "{{kv('BUCKET_NAME')}}"
     from: "{{render(vars.data)}}"
-    key: "{{render(vars.minio_file)}}"
+    key: "{{inputs.taxi}}/{{render(vars.minio_file)}}"
 
   - id: create_database
     type: io.kestra.plugin.jdbc.clickhouse.Query
-    sql: CREATE DATABASE IF NOT EXISTS zoomcamp
+    sql: CREATE DATABASE IF NOT EXISTS bronze
 
   - id: if_green_taxi
     type: io.kestra.plugin.core.flow.If
@@ -54,7 +53,7 @@ tasks:
       - id: cl_green_tripdata
         type: io.kestra.plugin.jdbc.clickhouse.Query
         sql: |
-          CREATE TABLE IF NOT EXISTS {{render(vars.table)}}_ext (
+          CREATE TABLE IF NOT EXISTS {{render(vars.table)}} (
           VendorID String,
           lpep_pickup_datetime String,
           lpep_dropoff_datetime String,
@@ -74,18 +73,16 @@ tasks:
           total_amount String,
           payment_type String,
           congestion_surcharge String,
-          trip_type String
+          trip_type String,
+          trigger_month String DEFAULT '{{trigger.date | date('yyyy-MM')}}',
+          load_date Date DEFAULT toDate(now())
           )
-          ENGINE = S3('http://object-store:9000/zoomcamp/{{render(vars.minio_file)}}',
-              "{{kv('ACCESS_KEY_ID')}}",
-              "{{kv('SECRET_KEY_ID')}}",
-              'CSV')
-          SETTINGS 
-              input_format_with_names_use_header = 1;
-
-      - id: merge_green_tables
-        type: io.kestra.plugin.jdbc.clickhouse.Query
-        sql: CREATE TABLE IF NOT EXISTS zoomcamp.green_tripdata ENGINE=Merge('zoomcamp', '^green');
+          ENGINE = S3(
+          'http://object-store:9000/zoomcamp/{{inputs.taxi}}/*',
+          '{{kv('ACCESS_KEY_ID')}}',
+          '{{kv('SECRET_KEY_ID')}}',
+          'Parquet'
+          );
 
   - id: if_yellow_taxi
     type: io.kestra.plugin.core.flow.If
@@ -94,7 +91,7 @@ tasks:
       - id: cl_yellow_tripdata
         type: io.kestra.plugin.jdbc.clickhouse.Query
         sql: |
-          CREATE TABLE IF NOT EXISTS {{render(vars.table)}}_ext (
+          CREATE TABLE IF NOT EXISTS {{render(vars.table)}} (
           VendorID String,
           tpep_pickup_datetime String,
           tpep_dropoff_datetime String,
@@ -112,18 +109,16 @@ tasks:
           tolls_amount String,
           improvement_surcharge String,
           total_amount String,
-          congestion_surcharge String
+          congestion_surcharge String,
+          trigger_month String DEFAULT '{{trigger.date | date('yyyy-MM')}}',
+          load_date Date DEFAULT toDate(now())
           )
-          ENGINE = S3('http://object-store:9000/zoomcamp/{{render(vars.minio_file)}}',
-              "{{kv('ACCESS_KEY_ID')}}",
-              "{{kv('SECRET_KEY_ID')}}",
-              'CSV')
-          SETTINGS 
-              input_format_with_names_use_header = 1;
-
-      - id: merge_yellow_tables
-        type: io.kestra.plugin.jdbc.clickhouse.Query
-        sql: CREATE TABLE IF NOT EXISTS zoomcamp.yellow_tripdata ENGINE=Merge('zoomcamp', '^yellow');
+          ENGINE = S3(
+          'http://object-store:9000/zoomcamp/{{inputs.taxi}}/*',
+          '{{kv('ACCESS_KEY_ID')}}',
+          '{{kv('SECRET_KEY_ID')}}',
+          'Parquet'
+          );
 
   - id: purge_files
     type: io.kestra.plugin.core.storage.PurgeCurrentExecutionFiles
