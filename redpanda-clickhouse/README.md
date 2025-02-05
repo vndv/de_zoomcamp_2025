@@ -33,7 +33,7 @@ After finish work:
 
 ```bash
 make redpanda-down
-``
+```
 
 
 Start a Kafka cluster
@@ -47,7 +47,7 @@ After finish work:
 
 ```bash
 make kafka-down
-``
+```
 
 ## 3. Set RPK alias
 
