@@ -1,0 +1,33 @@
+gateways:
+  clickhouse:
+    connection:
+      # For more information on configuring the connection to your execution engine, visit:
+      # https://sqlmesh.readthedocs.io/en/stable/reference/configuration/#connections
+      # https://sqlmesh.readthedocs.io/en/stable/integrations/engines/clickhouse/#connection-options
+      type: clickhouse
+      host: localhost
+      username: default
+      # concurrent_tasks: 1
+      # register_comments: True
+      # pre_ping: False
+      # pretty_sql: False
+      password: clickhouse_password
+      port: 8123
+      # cluster: 
+      # connect_timeout: 10
+      # send_receive_timeout: 300
+      verify: False
+      # query_limit: 0
+      # use_compression: True
+      # compression_method: 
+      # connection_settings: 
+      # connection_pool_options:
+    state_connection:
+      type: duckdb 
+
+
+default_gateway: clickhouse
+
+model_defaults:
+  dialect: clickhouse
+  start: 2025-02-04
