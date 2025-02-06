@@ -1,5 +1,4 @@
--- SQLMesh model definition for ClickHouse
-
+/* SQLMesh model definition for ClickHouse */
 MODEL (
   name silver.dim_zones,
   kind FULL,
@@ -9,9 +8,9 @@ MODEL (
   tags ['seeds']
 );
 
-select 
-    locationid, 
-    borough, 
-    zone, 
-    replace(service_zone,'Boro','Green') as service_zone 
-from bronze.taxi_zone_lookup;
+SELECT
+  locationid,
+  borough,
+  zone,
+  replace(service_zone, 'Boro', 'Green') AS service_zone
+FROM bronze.taxi_zone_lookup
