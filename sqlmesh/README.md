@@ -29,4 +29,4 @@ sqlmesh ui
 sqlmesh plan
 ```
 
-todo: add ci/cd
+todo: fix ci/cd
