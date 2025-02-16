@@ -1,4 +1,5 @@
 import csv
+import time
 import json
 from typing import List, Dict
 from kafka import KafkaProducer
@@ -9,31 +10,36 @@ from settings import BOOTSTRAP_SERVERS, INPUT_DATA_PATH, KAFKA_TOPIC
 
 
 class JsonProducer(KafkaProducer):
-    def __init__(self, props: Dict):
+    def __init__(self, props: Dict[str, str]) -> None:
+
         self.producer = KafkaProducer(**props)
 
     @staticmethod
-    def read_records(resource_path: str):
+    def read_records(resource_path: str) -> List[Ride]:
         records = []
-        with open(resource_path, 'r') as f:
-            reader = csv.reader(f)
-            header = next(reader)  # skip the header row
-            for row in reader:
-                records.append(Ride(arr=row))
+        try:
+            with open(resource_path, 'r') as f:
+                reader = csv.reader(f)
+                header = next(reader)
+                for row in reader:
+                    records.append(Ride(arr=row))
+        except FileNotFoundError as e:
+            print(f"Error: file not found - {e}")
+        except Exception as e:
+            print(f"Error: {e}")
         return records
 
-    def publish_rides(self, topic: str, messages: List[Ride]):
+    def publish_rides(self, topic: str, messages: List[Ride]) -> None:
         for ride in messages:
             try:
+                time.sleep(1)
                 record = self.producer.send(topic=topic, key=ride.pu_location_id, value=ride)
                 print('Record {} successfully produced at offset {}'.format(ride.pu_location_id, record.get().offset))
             except KafkaTimeoutError as e:
-                print(e.__str__())
+                print(f"Kafka error: {e}")
 
 
 if __name__ == '__main__':
-    # Config Should match with the KafkaProducer expectation
-    # kafka expects binary format for the key-value pair
     config = {
         'bootstrap_servers': BOOTSTRAP_SERVERS,
         'key_serializer': lambda key: str(key).encode(),

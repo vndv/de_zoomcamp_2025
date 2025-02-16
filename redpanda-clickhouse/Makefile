@@ -1,5 +1,6 @@
 KAFKA=kafka-compose.yml
 PANDA=redpanda-compose.yml
+KSQL=docker-compose -f ksql-compose.yml
 COMPOSE=docker compose -f docker-compose.yml -f
 
 .PHONY: produce
@@ -33,3 +34,19 @@ redpanda-down:
 .PHONY: redpanda-data-down
 redpanda-data-down:
 	@ ${COMPOSE} ${PANDA} down -v
+
+.PHONY: ksql-up
+ksql-up:
+	@ ${KSQL} up -d
+
+.PHONY: ksql-down
+ksql-down:
+	@ ${KSQL} down
+
+.PHONY: ksql-data-down
+ksql-data-down:
+	@ ${KSQL} down -v
+
+.PHONY: ksql-cli
+ksql-cli:
+	@ ${KSQL} exec -i ksql-cli ksql http://ksql-server:8088

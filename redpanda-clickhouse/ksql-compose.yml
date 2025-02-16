@@ -1,0 +1,92 @@
+version: "3.8"
+
+services:
+  kafka:
+    image: docker.redpanda.com/redpandadata/redpanda:v23.2.7
+    restart: on-failure
+    container_name: kafka
+    platform: linux/amd64
+    ports:
+      - "127.0.0.1:19092:19092"
+      - "9092:9092"
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://kafka:9092,external://127.0.0.1:19092
+      - --rpc-addr kafka:33145
+      - --advertise-rpc-addr kafka:33145
+      - --smp 1
+      - --memory 1G
+      - --mode dev-container
+      - --default-log-level=warn
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:5.4.1
+    platform: linux/amd64
+    hostname: control-center
+    container_name: control-center
+    depends_on:
+      - kafka
+      - ksql-server
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'kafka:9092'
+      CONTROL_CENTER_KSQL_URL: "http://ksql-server:8088"
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_METRICS_ENABLE: "false"
+      CONTROL_CENTER_KSQL_CLUSTER_ID: "ksql-cluster"
+      CONTROL_CENTER_REST_LISTENERS: "http://0.0.0.0:9021"
+      CONTROL_CENTER_REST_ADVERTISED_LISTENERS: "http://localhost:9021"
+      CONTROL_CENTER_CONNECT_CLUSTER: "http://ksql-server:8088"
+      CONTROL_CENTER_NAME: "control-center"
+      CONTROL_CENTER_ID: 1
+      CONTROL_CENTER_STREAMS_CONSUMER_REQUEST_TIMEOUT_MS: 960000
+      CONTROL_CENTER_STREAMS_PRODUCER_REQUEST_TIMEOUT_MS: 960000
+      CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_REPLICATION: 1
+      PORT: 9021
+
+  ksql-server:
+    image: confluentinc/cp-ksql-server:5.4.1
+    platform: linux/amd64
+    hostname: ksql-server
+    container_name: ksql-server
+    depends_on:
+      - kafka
+    ports:
+      - "8088:8088"
+    environment:
+      KSQL_BOOTSTRAP_SERVERS: 'kafka:9092'
+      KSQL_LISTENERS: "http://0.0.0.0:8088"
+      KSQL_KSQL_SERVICE_ID: "ksql-cluster"
+      KSQL_KSQL_STREAMS_REPLICATION_FACTOR: 1
+      KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 1
+      KSQL_KSQL_SINK_REPLICAS: 1
+      KSQL_CACHE_MAX_BYTES_BUFFERING: 0
+      KSQL_HOST_NAME: ksql-server
+      KSQL_APPLICATION_ID: "ksql-server"
+      KSQL_COMMIT_INTERVAL_MS: 2000
+      KSQL_KSQL_STREAMS_NUM_STREAM_THREADS: 1
+      KSQL_KSQL_STREAMS_CACHE_MAX_BYTES_BUFFERING: 10000000
+      KSQL_KSQL_STREAMS_AUTO_OFFSET_RESET: "earliest"
+      KSQL_KSQL_STREAMS_STATE_DIR: "/tmp/kafka-streams"
+
+  ksql-cli:
+    image: confluentinc/cp-ksql-cli:5.4.1
+    platform: linux/amd64
+    container_name: ksql-cli
+    depends_on:
+      - kafka
+      - ksql-server
+    entrypoint: /bin/sh
+    tty: true
+
+volumes:
+  redpanda-data: null

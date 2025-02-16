@@ -79,15 +79,29 @@ make consume
 
 Run the `python -m producer.py` command again (and again) to observe that the `consumer` worker tab would automatically consume messages in real-time when new `events` occur
 
-## 5. Redpanda UI
+## 5. KSQL - example
+
+To run the producer-consumer examples, open 2 shell terminals in 2 side-by-side tabs and run following commands. Be sure to activate your virtual environment in each terminal.
+
+```bash
+# Start consumer script, in 1st terminal tab
+make ksql-up
+# Start producer script, in 2nd terminal tab
+make ksql-down
+```
+
+KSQL UI: localhost:9021
+
+
+## 6. Redpanda UI
 
 You can also see the clusters, topics, etc from the Redpanda Console UI via your browser at [http://localhost:8080](http://localhost:8080)
 
-## 6. Kafdrop UI
+## 7. Kafdrop UI
 
 You can also see the clusters, topics, etc from the Redpanda Console UI via your browser at [http://localhost:9000](http://localhost:9000)
 
-## 7. rpk commands glossary
+## 8. rpk commands glossary
 
 Visit [get-started-rpk blog post](https://redpanda.com/blog/get-started-rpk-manage-streaming-data-clusters) for more.
 
@@ -118,12 +132,23 @@ rpk group list
 rpk group describe my-group
 ```
 
-## 7. Additional Resources
+## 9. Use sql scripts inside queries folder to create tables and materialized views
+
+![alt text](./resources/clickhouse.png)
+
+```bash
+cd de_zoomcamp_2025/redpanda-clickouse
+make redpanda-up
+```
+
+
+## 10. Additional Resources
 
 Redpanda Univerity (needs a Redpanda account and it is free to enrol and do the course(s))
 - [RP101: Getting Started with Redpanda](https://university.redpanda.com/courses/hands-on-redpanda-getting-started)
 - [RP102: Stream Processing with Redpanda](https://university.redpanda.com/courses/take/hands-on-redpanda-stream-processing/lessons/37830192-intro)
 - [SF101: Streaming Fundamentals](https://university.redpanda.com/courses/streaming-fundamentals)
 - [SF102: Kafka building blocks](https://university.redpanda.com/courses/kafka-building-blocks)
+- [Using the Kafka table engine](https://clickhouse.com/docs/en/integrations/kafka/kafka-table-engine)
 
 If you feel that you already have a good foundational basis on Streaming and Kafka, feel free to skip these supplementary courses.
